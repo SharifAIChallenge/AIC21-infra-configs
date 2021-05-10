@@ -1,0 +1,114 @@
+  version: '3.3'
+
+  services:
+    front:
+      image: reg.aichallenge.ir/aic/aic21-front:551-f6f1b8db #front:16.44
+      networks:
+        - network
+      ports:
+        - 3000:3000
+      command:
+        "npm run start"
+      deploy:
+        replicas: 1
+        placement:
+          constraints:
+            - node.labels.production == true
+
+    back:
+      image: reg.aichallenge.ir/aic/aic21-back:550-b88a0965 #548-521b8d95
+      networks:
+        - network
+      deploy:
+        replicas: 1
+        placement:
+          constraints:
+            - node.labels.production == true
+      depends_on:
+        #- rabbitmq
+        - postgres
+        #- redis
+      environment:
+        DJANGO_SETTINGS_MODULE: "AIC21_Backend.settings.production"
+        DB_NAME: "aic"
+        DB_USER: "aic"
+        DB_PASSWORD: "@ich@llenge2o2ow!llbefunenough"
+        DB_HOST: "postgres"
+        DB_PORT: "5432"
+
+        EMAIL_BACKEND: "django.core.mail.backends.smtp.EmailBackend"
+        EMAIL_USE_TLS: "True"
+        EMAIL_USER_SSL: "False"
+        EMAIL_HOST: "chaapaar.aichallenge.ir"
+        EMAIL_HOST_USER: "noreply@aichallenge.ir"
+        EMAIL_HOST_PASSWORD: "noreplyjoon"
+        EMAIL_PORT: "587"
+
+        LOG_ROOT: "/var/log/AIC21_Backend/"
+
+        INFRA_IP: "http://infraip:port"
+        INFRA_AUTH_TOKEN: "infra-token"
+        GATEWAY_HOST: "http://spg.aichallenge.ir:6009"
+        GATEWAY_AUTH_TOKEN: "y:ezHR8w/hw&WRz3n}]wh!!)3Q;s:NC=JwE;BWa~"
+        INFRA_TOKEN: "<#qJ4ak<6&cq7Bwu7%9>;aN,q#cSc@]J(acqN2;v{;fZ/zk#"
+      command: >
+        sh -c "
+          ./manage.py migrate;
+          ./manage.py compilemessages;
+          ./manage.py collectstatic --noinput;
+          gunicorn --bind=0.0.0.0:8000 --timeout=90  --workers=10 --preload AIC21_Backend.wsgi:application;
+        "
+      volumes:
+        - /root/AIC21-Backend/static/:/static/
+        - /root/AIC21-Backend/media/:/media/
+        - /var/log/AIC21_Backend:/var/log/AIC21_Backend
+        - cachedata:/cachec
+      ports:
+        - 8111:8000
+    rabbitmq:
+      networks:
+        - network
+      deploy:
+        replicas: 1
+        placement:
+          constraints:
+            - node.labels.production == true
+      image: rabbitmq:3-management
+      environment:
+        - RABBITMQ_DEFAULT_USER=aic
+        - RABBITMQ_DEFAULT_PASS=aic21challenge
+    postgres:
+      image: postgres:latest
+      networks:
+        - network
+      deploy:
+        replicas: 1
+        placement:
+          constraints:
+            - node.labels.production == true
+      volumes:
+        - pgdata:/var/lib/postgresql/data/
+      environment:
+        - POSTGRES_DB=aic
+        - POSTGRES_USER=aic
+        - POSTGRES_PASSWORD=@ich@llenge2o2ow!llbefunenough
+    redis:
+      image: redis:latest
+      networks:
+        - network
+      deploy:
+        replicas: 1
+        placement:
+          constraints:
+            - node.labels.production == true
+      volumes:
+        - redisdata:/data
+
+  volumes:
+    pgdata:
+    redisdata:
+    cachedata:
+
+  networks:
+    network:
+

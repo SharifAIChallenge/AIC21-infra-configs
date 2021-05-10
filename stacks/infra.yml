@@ -1,0 +1,142 @@
+version: '3.6'
+
+services:
+  saint-peters-gate:
+    image: reg.aichallenge.ir/aic/infra/saint-peters-gate:535-7b685f3d #426-e8b9092e
+    networks:
+      - network
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.infra-gate == true
+          - node.labels.infra-worker == true
+    environment:
+      KAFKA_ENDPOINT: "kn1.aichallenge.ir:9092,kn2.aichallenge.ir:9092,kn3.aichallenge.ir:9092"
+      KAFKA_TOPIC_STORE_CODE: "store-code"
+      KAFKA_TOPIC_MATCH: "matches"
+      KAFKA_TOPIC_MATCH_0: "matches"
+      KAFKA_TOPIC_MATCH_0_PARTITIONS: 48
+
+      KAFKA_TOPIC_MATCH_1_PARTITIONS: 2
+
+      # KAFKA_TOPIC_MATCH_1: "matches"
+      KAFKA_TOPIC_MATCH_1: "matches-friendly"
+      MINIO_ENDPOINT: "minio.aichallenge.ir:9001"
+      MINIO_ACCESS_KEY: "ngnFxoPBtPZjBS7m4x12Yb1q5FovKGa4Bl9PsENs13nmDTRp"
+      MINIO_SECRET_KEY: "RuRRYyZKbOwVnkyNRYq1f7CRPq89XqOwFHkxoTY4Epq0fvHh"
+      MINIO_BUCKET_CODE: "code"
+      MINIO_BUCKET_MAP: "map"
+      MINIO_BUCKET_LOG: "log"
+      MINIO_DOWNLOAD_LINK_DOMAIN: "https://storage.aichallenge.ir"
+      BACKEND_TOKEN: "y:ezHR8w/hw&WRz3n}]wh!!)3Q;s:NC=JwE;BWa~"
+
+    command: >
+      sh -c "
+        ./manage.py compilemessages;
+        gunicorn --bind=0.0.0.0:8000 --timeout=90  --workers=1 --threads=10 --preload gateway.wsgi:application;
+      "
+    ports:
+      - 6009:8000
+  compiler:
+    image: reg.aichallenge.ir/aic/infra/compiler:430-a08e3bc0
+    networks:
+      - network
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - node.labels.infra-worker == true
+          - node.labels.infra-gate == true
+    environment:
+      KAFKA_ENDPOINT: "kn1.aichallenge.ir:9092,kn2.aichallenge.ir:9092,kn3.aichallenge.ir:9092"
+      MINIO_ENDPOINT: "minio.aichallenge.ir:9001"
+      KAFKA_TOPIC_STORE_CODE: "store-code"
+      KAFKA_TOPIC_EVENTS: "events"
+      KAFKA_CONSUMER_GP: "compiler-consumer"
+      MINIO_ACCESS_KEY: "ngnFxoPBtPZjBS7m4x12Yb1q5FovKGa4Bl9PsENs13nmDTRp"
+      MINIO_SECRET_KEY: "RuRRYyZKbOwVnkyNRYq1f7CRPq89XqOwFHkxoTY4Epq0fvHh"
+      MINIO_BUCKET_CODE: "code"
+    command: "python3 -u main.py"
+
+  final_judgment:
+    image: reg.aichallenge.ir/aic/infra/final_judgment:534-f019107d #521-fca8d683 #486-b2af3cf0 #442-643cbf51 #434-7c962d94
+    networks:
+      - network
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.labels.infra-worker == true
+          - node.labels.infra-judge == true
+      update_config:
+        parallelism:   20
+        delay:         5s
+    environment:
+      KAFKA_ENDPOINT: "kn1.aichallenge.ir:9092,kn2.aichallenge.ir:9092,kn3.aichallenge.ir:9092"
+      KAFKA_TOPIC_MATCH: "matches"
+      KAFKA_TOPIC_EVENTS: "events"
+      KAFKA_TOPIC_CONSUMER_GROUP: "final-judgment-is-set-bahman-khunin6"
+
+      MINIO_ENDPOINT: "minio.aichallenge.ir:9001"
+      MINIO_ACCESS_KEY: "ngnFxoPBtPZjBS7m4x12Yb1q5FovKGa4Bl9PsENs13nmDTRp"
+      MINIO_SECRET_KEY: "RuRRYyZKbOwVnkyNRYq1f7CRPq89XqOwFHkxoTY4Epq0fvHh"
+      MINIO_BUCKET_CODE: "code"
+      MINIO_BUCKET_MAP: "map"
+      MINIO_BUCKET_LOG: "log"
+
+      MATCH_TIMEOUT: "1801"
+      
+    command: "python3 -u main.py"
+
+  limbo:
+    image: reg.aichallenge.ir/aic/infra/final_judgment:534-f019107d #521-fca8d683 #486-b2af3cf0 #442-643cbf51 #434-7c962d94
+    networks:
+      - network
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.labels.infra-worker == true
+          - node.labels.infra-limbo == true
+      update_config:
+        parallelism:   1
+        delay:         10s
+    environment:
+      KAFKA_ENDPOINT: "kn1.aichallenge.ir:9092,kn2.aichallenge.ir:9092,kn3.aichallenge.ir:9092"
+      KAFKA_TOPIC_MATCH: "matches-friendly"
+      KAFKA_TOPIC_EVENTS: "events"
+      KAFKA_TOPIC_CONSUMER_GROUP: "limbo-is-here-bitches-again"
+
+      MINIO_ENDPOINT: "minio.aichallenge.ir:9001"
+      MINIO_ACCESS_KEY: "ngnFxoPBtPZjBS7m4x12Yb1q5FovKGa4Bl9PsENs13nmDTRp"
+      MINIO_SECRET_KEY: "RuRRYyZKbOwVnkyNRYq1f7CRPq89XqOwFHkxoTY4Epq0fvHh"
+      MINIO_BUCKET_CODE: "code"
+      MINIO_BUCKET_MAP: "map"
+      MINIO_BUCKET_LOG: "log"
+
+      MATCH_TIMEOUT: "1801"
+      
+    command: "python3 -u main.py"
+
+  event-broker:
+    image: reg.aichallenge.ir/aic/infra/event-broker:155-b33b6fee
+    networks:
+      - network
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.infra-worker == true
+          - node.labels.infra-gate == true
+    environment:
+      KAFKA_ENDPOINT: "kn1.aichallenge.ir:9092,kn2.aichallenge.ir:9092,kn3.aichallenge.ir:9092"
+      KAFKA_TOPIC_EVENTS: "events"
+      BACKEND_URL: "https://aichallenge.ir/api/infra-gateway/event/push"
+      BACKEND_TOKEN: "<#qJ4ak<6&cq7Bwu7%9>;aN,q#cSc@]J(acqN2;v{;fZ/zk#"
+      
+    command: "python3 -u event_consumer.py"
+
+networks:
+  network:
+
