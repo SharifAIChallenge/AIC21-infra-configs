@@ -1,0 +1,40 @@
+server {
+
+    server_name storage.aichallenge.ir;
+    client_max_body_size 500M;
+    location / { 
+        add_header "Access-Control-Allow-Origin" "*";
+        add_header "Access-Control-Allow-Methods" "GET, POST, OPTIONS";
+        add_header "Access-Control-Allow-Headers" "Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Accept";
+        root    /var/lib/minio;
+    }
+
+
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/storage.aichallenge.ir/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/storage.aichallenge.ir/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+server {
+    if ($host = storage.aichallenge.ir) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    location / { 
+        add_header "Access-Control-Allow-Origin" "*";
+        add_header "Access-Control-Allow-Methods" "GET, POST, OPTIONS";
+        add_header "Access-Control-Allow-Headers" "Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Accept";
+        root    /var/lib/minio;
+    }
+
+    server_name storage.aichallenge.ir;
+
+    listen 80;
+
+
+}
+
