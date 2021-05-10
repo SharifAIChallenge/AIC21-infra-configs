@@ -2,7 +2,7 @@
 
   services:
     front:
-      image: reg.aichallenge.ir/aic/aic21-front:551-f6f1b8db #front:16.44
+      image: reg.aichallenge.ir/aic/aic21-front:551-f6f1b8db
       networks:
         - network
       ports:
@@ -16,7 +16,7 @@
             - node.labels.production == true
 
     back:
-      image: reg.aichallenge.ir/aic/aic21-back:550-b88a0965 #548-521b8d95
+      image: reg.aichallenge.ir/aic/aic21-back:550-b88a0965 
       networks:
         - network
       deploy:

@@ -2,7 +2,7 @@ version: '3.3'
 
 services:
   front:
-    image: reg.aichallenge.ir/aic/aic21-front:551-f6f1b8db #26-d00935f0
+    image: reg.aichallenge.ir/aic/aic21-front:551-f6f1b8db
     ports:
       - 3020:3000
     command:
@@ -16,7 +16,7 @@ services:
           - node.labels.stg == true
 
   back:
-    image: reg.aichallenge.ir/aic/aic21-back:550-b88a0965 #548-521b8d95 #i81-6586450f
+    image: reg.aichallenge.ir/aic/aic21-back:550-b88a0965 
     networks:
       - network
     deploy:

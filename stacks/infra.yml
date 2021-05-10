@@ -14,14 +14,13 @@ services:
     environment:
       KAFKA_ENDPOINT: "kn1.aichallenge.ir:9092,kn2.aichallenge.ir:9092,kn3.aichallenge.ir:9092"
       KAFKA_TOPIC_STORE_CODE: "store-code"
-      KAFKA_TOPIC_MATCH: "matches"
+
       KAFKA_TOPIC_MATCH_0: "matches"
       KAFKA_TOPIC_MATCH_0_PARTITIONS: 48
 
+      KAFKA_TOPIC_MATCH_1: "matches-friendly"
       KAFKA_TOPIC_MATCH_1_PARTITIONS: 2
 
-      # KAFKA_TOPIC_MATCH_1: "matches"
-      KAFKA_TOPIC_MATCH_1: "matches-friendly"
       MINIO_ENDPOINT: "minio.aichallenge.ir:9001"
       MINIO_ACCESS_KEY: "ngnFxoPBtPZjBS7m4x12Yb1q5FovKGa4Bl9PsENs13nmDTRp"
       MINIO_SECRET_KEY: "RuRRYyZKbOwVnkyNRYq1f7CRPq89XqOwFHkxoTY4Epq0fvHh"

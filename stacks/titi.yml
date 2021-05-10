@@ -1,3 +1,4 @@
+# infra test enviorment
 version: '3.6'
 
 services:
@@ -16,7 +17,6 @@ services:
       KAFKA_TOPIC_MATCH_0_PARTITIONS: 10
       KAFKA_TOPIC_MATCH_1_PARTITIONS: 10
       KAFKA_TOPIC_MATCH_0: "jj"
-      # KAFKA_TOPIC_MATCH_1: "matches"
       KAFKA_TOPIC_MATCH_1: "jj"
       MINIO_ENDPOINT: "minio.aichallenge.ir:9001"
       MINIO_ACCESS_KEY: "ngnFxoPBtPZjBS7m4x12Yb1q5FovKGa4Bl9PsENs13nmDTRp"
